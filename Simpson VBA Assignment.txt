@@ -1,0 +1,172 @@
+Sub Moderate()
+
+'Get last row of sheet
+Dim LastRow As Long
+LastRow = Cells(Rows.Count, 1).End(xlUp).Row
+
+'Get last row of summary table
+Dim LastRowT As Long
+LastRowT = Cells(Rows.Count, 11).End(xlUp).Row
+
+'Get last row for volume column
+Dim LastRowTV As Long
+LastRowTV = Cells(Rows.Count, 12).End(xlUp).Row
+
+'Creat variables
+Dim TotalVolume As String
+TotalVolume = 0
+Dim SummaryRow As Integer
+SummaryRow = 2
+Dim Ticker As String
+Dim OpenPrice As String
+OpenPrice = Cells(2, 3).Value
+Dim ClosingPrice As String
+Dim PercentChange As Double
+Dim GreatInc As Double
+GreatInc = 0
+Dim GreatDec As Double
+GreatDec = 0
+Dim GreatV As LongLong
+GreatV = 0
+
+
+'Set Heading Cells
+
+Cells(1, 9).Value = "Ticker"
+Cells(1, 10).Value = "Change in Price"
+Cells(1, 11).Value = "Percentage Change"
+Cells(1, 12).Value = "Total Stock Volume"
+Cells(1, 15).Value = "Ticker"
+Cells(1, 16).Value = "Value"
+Cells(2, 14).Value = "Greatest % Increase"
+Cells(3, 14).Value = "Greatest % Decrease"
+Cells(4, 14).Value = "Greatest Total Volume"
+
+'Creat loop to add values to summary chart
+
+For I = 2 To LastRow
+
+If Cells(I, 1).Value <> Cells(I + 1, 1).Value Then
+   
+   Ticker = Cells(I, 1).Value
+   ClosingPrice = Cells(I, 6).Value
+   
+   TotalVolume = TotalVolume + Cells(I, 7).Value
+   Range("I" & SummaryRow).Value = Ticker
+   Range("L" & SummaryRow).Value = TotalVolume
+   
+   ChangePrice = ClosingPrice - OpenPrice
+   Range("J" & SummaryRow).Value = ClosingPrice - OpenPrice
+   Range("K" & SummaryRow).Value = (ClosingPrice - OpenPrice) / OpenPrice
+   Range("K" & SummaryRow).Value = Format(Range("K" & SummaryRow).Value, "Percent")
+      
+    If ChangePrice < 0 Then
+    Range("J" & SummaryRow).Interior.ColorIndex = 3
+    ElseIf ChangePrice > 0 Then
+    Range("J" & SummaryRow).Interior.ColorIndex = 4
+    End If
+
+    
+    
+   SummaryRow = SummaryRow + 1
+   TotalVolume = 0
+   
+   OpenPrice = Cells(I + 1, 3).Value
+   
+      'If the opening price is zero, create a loop to find actual opening price
+
+   For j = I + 1 To LastRow
+   If OpenPrice = 0 Then
+    
+   OpenPrice = Cells(j + 1, 3).Value
+   ElseIf OpenPrice = 0 Then
+    End If
+    Next j
+   
+Else
+   
+   TotalVolume = TotalVolume + Cells(I, 7).Value
+   
+End If
+
+Next I
+
+
+End Sub
+
+Sub Hard()
+
+'Get last row of summary table
+Dim LastRowT As Long
+LastRowT = Cells(Rows.Count, 11).End(xlUp).Row
+
+'Get last row for volume column
+Dim LastRowTV As Long
+LastRowTV = Cells(Rows.Count, 12).End(xlUp).Row
+
+'Creat variables
+
+Dim GreatInc As Double
+GreatInc = 0
+Dim GreatDec As Double
+GreatDec = 0
+Dim GreatV As LongLong
+GreatV = 0
+
+'Create loop to determine greatest percentage increase
+
+For k = 2 To LastRowT
+If Cells(k, 11).Value >= GreatInc Then
+GreatInc = Cells(k, 11).Value
+Cells(2, 15).Value = Cells(k, 9).Value
+Cells(2, 16).Value = GreatInc
+Cells(2, 16).Value = Format(Cells(2, 16).Value, "Percent")
+End If
+
+Next k
+
+'Create loop to determine greatest percentage decrease
+
+For m = 2 To LastRowT
+If Cells(m, 11).Value <= GreatDec Then
+GreatDec = Cells(m, 11).Value
+Cells(3, 15).Value = Cells(m, 9).Value
+Cells(3, 16).Value = GreatDec
+Cells(3, 16).Value = Format(Cells(3, 16).Value, "Percent")
+End If
+Next m
+
+'Create a loop to determine greatest total volume
+
+For n = 2 To LastRowTV
+If Cells(n, 12).Value >= GreatV Then
+GreatV = Cells(n, 12).Value
+Cells(4, 15).Value = Cells(n, 9).Value
+Cells(4, 16).Value = GreatV
+End If
+Next n
+
+
+End Sub
+
+Sub All()
+
+Dim ws As Worksheet
+
+For Each ws In ThisWorkbook.Worksheets
+
+ws.Select
+
+    Call Moderate
+    Call Hard
+    
+    ws.Columns(10).AutoFit
+    ws.Columns(11).AutoFit
+    ws.Columns(12).AutoFit
+    ws.Columns(14).AutoFit
+    ws.Columns(16).AutoFit
+    ws.Range("I1:P1").Font.Bold = True
+    
+Next ws
+    
+End Sub
